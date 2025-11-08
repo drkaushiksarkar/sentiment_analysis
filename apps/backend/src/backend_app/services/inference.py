@@ -90,7 +90,12 @@ class SentimentService:
 
     def _encode(self, text: str) -> Tuple[np.ndarray, int]:
         tokens = self._tokenize(text)
-        indices = [self.word_index.get(token, self.unknown_token) for token in tokens]
+        indices = []
+        for token in tokens:
+            idx = self.word_index.get(token, self.unknown_token)
+            if idx >= self.model_cfg.vocab_size:
+                idx = self.unknown_token
+            indices.append(idx)
         if not indices:
             indices = [self.unknown_token]
         padded = pad_sequences(
