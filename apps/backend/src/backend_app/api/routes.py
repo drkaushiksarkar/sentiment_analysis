@@ -26,8 +26,9 @@ inference_router = APIRouter(prefix="/api/v1", tags=["inference"])
 def get_sentiment_service() -> SentimentService:
     settings = get_settings()
     word_index_path = Path(settings.imdb_word_index_path) if settings.imdb_word_index_path else None
+    weights_path = Path(settings.imdb_weights_path) if Path(settings.imdb_weights_path).exists() else None
     return SentimentService(
-        weights_path=Path(settings.imdb_weights_path),
+        weights_path=weights_path,
         max_length=settings.imdb_max_length,
         word_index_path=word_index_path,
     )

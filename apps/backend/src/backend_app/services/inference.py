@@ -21,30 +21,46 @@ logger = logging.getLogger(__name__)
 class SentimentService:
     """Loads the IMDB dense classifier and exposes an inference-friendly interface."""
 
-    def __init__(self, weights_path: Path, max_length: int = 256, word_index_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        weights_path: Path | None,
+        max_length: int = 256,
+        word_index_path: Path | None = None,
+    ) -> None:
         self.dataset_cfg = imdb_data.ImdbDatasetConfig(max_length=max_length)
         self.model_cfg = imdb_models.DenseModelConfig(
             vocab_size=self.dataset_cfg.vocab_size,
             max_length=self.dataset_cfg.max_length,
         )
-        self.model = imdb_models.build_dense_model(self.model_cfg)
-        self._load_weights(weights_path)
+        self.model = None
         self.word_index = None
         self.unknown_token = None
         self.use_model = False
-        try:
-            self._load_word_index(word_index_path)
-            self.unknown_token = self.word_index.get("UNK", 2)
-            self.use_model = True
-        except Exception as exc:  # pragma: no cover - triggered in offline envs
+
+        if weights_path and Path(weights_path).exists():
+            self.model = imdb_models.build_dense_model(self.model_cfg)
+            self._load_weights(weights_path)
+            try:
+                self._load_word_index(word_index_path)
+                self.unknown_token = self.word_index.get("UNK", 2)
+                self.use_model = True
+            except Exception as exc:  # pragma: no cover
+                logger.warning(
+                    "Unable to initialize tokenizer; using fallback heuristic. Reason: %s",
+                    exc,
+                )
+                self.use_model = False
+                self._init_fallback_sets()
+        else:
             logger.warning(
-                "Falling back to keyword heuristics because word index could not be loaded: %s",
-                exc,
+                "Sentiment weights missing at %s; using keyword heuristic fallback.",
+                weights_path,
             )
-            self.use_model = False
             self._init_fallback_sets()
 
     def _load_weights(self, weights_path: Path) -> None:
+        if self.model is None:
+            return
         weights_path = Path(weights_path)
         if not weights_path.exists():
             raise FileNotFoundError(f"Model weights not found at {weights_path}")
@@ -108,6 +124,8 @@ class SentimentService:
         return padded, len(tokens)
 
     def _predict_model(self, text: str) -> SentimentResponse:
+        if not self.use_model or self.model is None or self.word_index is None:
+            raise RuntimeError("Model inference requested but model is not initialized.")
         encoded, token_count = self._encode(text)
         probability = float(self.model.predict(encoded, verbose=0)[0][0])
         signed_score = (probability - 0.5) * 2  # scale to [-1, 1]
