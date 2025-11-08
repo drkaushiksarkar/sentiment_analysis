@@ -13,12 +13,12 @@ dependencies = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.23",
     "pydantic-settings>=2.0",
+    "httpx>=0.28",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4",
-    "httpx>=0.28",
 ]
 
 [tool.hatch.build.targets.wheel]
