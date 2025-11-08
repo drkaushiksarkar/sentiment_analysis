@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchHealth, type HealthResponse } from "./api/health";
 import { HealthCard } from "./components/HealthCard";
+import { SentimentPlayground } from "./components/SentimentPlayground";
 
 type HealthState = {
   live: HealthResponse | null;
@@ -90,6 +91,7 @@ function App() {
             </p>
           </div>
         </article>
+        <SentimentPlayground />
       </section>
     </main>
   );
