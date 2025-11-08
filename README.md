@@ -1,6 +1,6 @@
 # Sentiment Intelligence Platform
 
-[![CI](https://github.com/drkaushiksarkar/sentiment_analysis/actions/workflows/ci.yml/badge.svg)](https://github.com/drkaushiksarkar/sentiment_analysis/actions/workflows/ci.yml)
+[![CI](https://github.com/drkaushiksarkar/sentiment_analysis/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/drkaushiksarkar/sentiment_analysis/actions/workflows/ci.yml?query=branch%3Amain)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-production--ready-success)
 ![React](https://img.shields.io/badge/React-18.x-61dafb)
