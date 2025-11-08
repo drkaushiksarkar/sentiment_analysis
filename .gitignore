@@ -1,0 +1,25 @@
+.venv/
+env/
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+.mypy_cache/
+.DS_Store
+artifacts/
+dist/
+build/
+node_modules/
+apps/frontend/node_modules/
+apps/frontend/dist/
+.env
+.env.*
+.idea/
+.vscode/
+coverage.xml
+*.log
+/.ruff_cache/
+*.egg-info/
+.svelte-kit/
+# Jupyter checkpoints
+.ipynb_checkpoints/
