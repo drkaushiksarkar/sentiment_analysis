@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchHealth, type HealthResponse } from "./api/health";
+import { fetchSentimentMetrics, type SentimentMetrics } from "./api/metrics";
 import { HealthCard } from "./components/HealthCard";
 import { SentimentPlayground } from "./components/SentimentPlayground";
+import { SentimentMetricsCard } from "./components/SentimentMetricsCard";
 
 type HealthState = {
   live: HealthResponse | null;
@@ -16,12 +18,19 @@ function App() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
+  const [metrics, setMetrics] = useState<SentimentMetrics | null>(null);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
 
-  const refreshHealth = async () => {
+  const refreshHealthAndMetrics = async () => {
     setIsLoading(true);
     setErrors({ live: null, ready: null });
+    setMetricsError(null);
     try {
-      const [live, ready] = await Promise.allSettled([fetchHealth("live"), fetchHealth("ready")]);
+      const [live, ready, metricsResult] = await Promise.allSettled([
+        fetchHealth("live"),
+        fetchHealth("ready"),
+        fetchSentimentMetrics(),
+      ]);
       setHealth({
         live: live.status === "fulfilled" ? live.value : null,
         ready: ready.status === "fulfilled" ? ready.value : null,
@@ -30,6 +39,12 @@ function App() {
         live: live.status === "rejected" ? live.reason?.message ?? "Unable to load" : null,
         ready: ready.status === "rejected" ? ready.reason?.message ?? "Unable to load" : null,
       });
+      if (metricsResult.status === "fulfilled") {
+        setMetrics(metricsResult.value);
+      } else {
+        setMetrics(null);
+        setMetricsError(metricsResult.reason?.message ?? "Unable to load metrics");
+      }
       setLastChecked(new Date());
     } finally {
       setIsLoading(false);
@@ -37,7 +52,7 @@ function App() {
   };
 
   useEffect(() => {
-    void refreshHealth();
+    void refreshHealthAndMetrics();
   }, []);
 
   const statusSummary = useMemo(() => {
@@ -61,7 +76,7 @@ function App() {
           </p>
         </div>
         <div className="hero__actions">
-          <button onClick={() => refreshHealth()} disabled={isLoading} className="primary">
+          <button onClick={() => refreshHealthAndMetrics()} disabled={isLoading} className="primary">
             {isLoading ? "Refreshing…" : "Refresh status"}
           </button>
           {lastChecked && <p className="muted">Last checked: {lastChecked.toLocaleTimeString()}</p>}
@@ -92,6 +107,7 @@ function App() {
           </div>
         </article>
         <SentimentPlayground />
+        <SentimentMetricsCard metrics={metrics} isLoading={isLoading} error={metricsError} />
       </section>
     </main>
   );

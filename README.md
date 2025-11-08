@@ -8,7 +8,7 @@ This repository now exposes the original notebook experiments (IMDB sentiment an
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -U pip
-pip install -e .[dev]
+pip install -e ".[dev]"
 ```
 
 > **TensorFlow note:**  
@@ -28,14 +28,6 @@ scripts/
   train_imdb.py
   train_sarcasm.py
 ```
-
-## Project Structure
-
-- `apps/backend`: FastAPI service scaffold with its own `pyproject`, tests, and Dockerfile.
-- `apps/frontend`: Vite + React + TypeScript client plus Dockerfile for static hosting.
-- `ml`: Training scripts, Docker image, and requirements pointing at the shared package.
-- `.github/workflows/ci.yml`: Runs linting (`ruff`) and tests on every push/PR.
-- `.gitignore`: Ignores virtualenvs, build artifacts, and front-end bundles.
 
 ## Example Usage
 
@@ -86,5 +78,3 @@ pytest
 ## Continuous Integration
 
 GitHub Actions (`.github/workflows/ci.yml`) provisions Python 3.11, installs the package inside a virtual environment, runs `ruff check .`, and executes `pytest` on every push or pull request targeting `main`. Ensure commits keep lint/test results green before requesting reviews.
-
-The workflow also installs `apps/backend` so backend-specific tests participate in CI.
